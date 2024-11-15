@@ -73,7 +73,7 @@ class Login extends React.Component {
 //   }
 // }
 
-// Tela de Cadastro
+// Fazendo tela de cadastro
 class Cadastro extends React.Component {
   constructor(props) {
     super(props);

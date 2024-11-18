@@ -15,25 +15,18 @@ const Stack = createStackNavigator();
 
 //Salvando os comentarios usando async-storage
 const salvarComentario = async (livroId, comentario) => {
-  try {
     const comentariosString = await AsyncStorage.getItem('comentarios');
     const comentarios = comentariosString ? JSON.parse(comentariosString) : {};
     const comentariosLivro = comentarios[livroId] || [];
     comentarios[livroId] = [...comentariosLivro, comentario];
     await AsyncStorage.setItem('comentarios', JSON.stringify(comentarios));
-  } catch (erro) {
-    console.error('Erro ao salvar comentário:', erro);
-  }
+  
 }
 
 const carregarComentarios = async () => {
-  try {
-    const comentariosString = await AsyncStorage.getItem('comentarios');
-    return comentariosString ? JSON.parse(comentariosString) : {};
-  } catch (erro) {
-    console.error('Erro ao carregar comentários:', erro);
-    return {};
-  }
+  const comentariosString = await AsyncStorage.getItem('comentarios');
+  return comentariosString ? JSON.parse(comentariosString) : {};
+ 
 }
 
 

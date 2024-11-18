@@ -13,7 +13,7 @@ Para participar das discussões, o usuário precisa criar uma conta, garantindo 
 **Descrição:**  
 A tela inicial permite que o usuário faça login no sistema. Caso ainda não tenha cadastro, será redirecionado para a página de cadastro.
 
-![Imagem da Tela Inicial](imagem1)
+![Imagem da Tela Inicial](img/tela_inicial.png)
 
 ---
 

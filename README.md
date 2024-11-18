@@ -7,6 +7,11 @@ Para participar das discussões, o usuário precisa criar uma conta, garantindo 
 
 ---
 
+## 💡 Inspiração
+A ideia do projeto nasceu da observação de como leitores gostariam de um espaço online para debater suas impressões sobre livros. Este site busca oferecer exatamente isso: uma comunidade digital interativa e acolhedora para os amantes de literatura.  
+
+---
+
 ## 🚀 Funcionalidades
 
 ### 🌟 Tela Inicial
@@ -41,6 +46,10 @@ Mostra o ranking dos livros mais comentados, permitindo que os usuários visuali
 
 ---
 
-## 💡 Inspiração
-A ideia do projeto nasceu da observação de como leitores gostariam de um espaço online para debater suas impressões sobre livros. Este site busca oferecer exatamente isso: uma comunidade digital interativa e acolhedora para os amantes de literatura.  
+
+### 🎯 Conclusao:
+
+A ideia do projeto foi um sucesso, consegui alcançar os obejtivos solicitados para o projeto. Durante a execução do código tive dificuldade para acessar variáveis em classes diferentes, mas consegui superar esses desafios, o que contribui significativamente para o meu aprendizado pessoal.
+
+
 

@@ -21,7 +21,7 @@ A tela inicial permite que o usuário faça login no sistema. Caso ainda não te
 **Descrição:**  
 Nesta tela, os usuários podem criar uma conta informando um nome de usuário e senha. Com o cadastro, eles terão acesso ao site e poderão comentar nos livros.
 
-![Imagem da Tela de Cadastro](imagem2)
+![Imagem da Tela de Cadastro](img/tela_cadastro.png)
 
 ---
 
@@ -29,7 +29,7 @@ Nesta tela, os usuários podem criar uma conta informando um nome de usuário e 
 **Descrição:**  
 Apresenta uma lista de livros disponíveis. Os usuários podem selecionar qualquer título para adicionar seus comentários. Importante: apenas comentários não vazios são computados.
 
-![Imagem da Tela dos Livros](imagem3)
+![Imagem da Tela dos Livros](Livros.png)
 
 ---
 
@@ -37,7 +37,7 @@ Apresenta uma lista de livros disponíveis. Os usuários podem selecionar qualqu
 **Descrição:**  
 Mostra o ranking dos livros mais comentados, permitindo que os usuários visualizem quais obras estão gerando mais engajamento e discussões.
 
-![Imagem da Tela de Ranking](imagem4)
+![Imagem da Tela de Ranking](tela_ranking.png)
 
 ---
 

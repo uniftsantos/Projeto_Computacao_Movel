@@ -49,7 +49,7 @@ Mostra o ranking dos livros mais comentados, permitindo que os usuários visuali
 
 ### 🎯 Conclusao:
 
-A ideia do projeto foi um sucesso, consegui alcançar os obejtivos solicitados para o projeto. Durante a execução do código tive dificuldade para acessar variáveis em classes diferentes, mas consegui superar esses desafios, o que contribui significativamente para o meu aprendizado pessoal.
+A ideia do projeto foi um sucesso, consegui alcançar os obejtivos solicitados para o projeto. Durante a execução do código tive dificuldade em armazenar os comentários realizados pelo usuário, mas consegui superar esses desafios, o que contribui significativamente para o meu aprendizado pessoal.
 
 
 

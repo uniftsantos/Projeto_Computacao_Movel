@@ -1,18 +1,43 @@
 import * as React from 'react';
-import { TextInput, Text, View, Button, Image, ScrollView, StyleSheet, Vibration } from 'react-native';
-import { NavigationContainer } from '@react-navigation/native';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { createStackNavigator } from '@react-navigation/stack';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import {TextInput, Text, View, Button, Image, ScrollView, StyleSheet, Vibration } from 'react-native';
+import {NavigationContainer } from '@react-navigation/native';
+import {createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import {createStackNavigator } from '@react-navigation/stack';
+import {MaterialCommunityIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
 const vibracao = () => Vibration.vibrate(1000);
 
 const Tab = createBottomTabNavigator();
+
 const Stack = createStackNavigator();
 
-// Estilos
+//Salvando os comentarios usando async-storage
+const salvarComentario = async (livroId, comentario) => {
+  try {
+    const comentariosString = await AsyncStorage.getItem('comentarios');
+    const comentarios = comentariosString ? JSON.parse(comentariosString) : {};
+    const comentariosLivro = comentarios[livroId] || [];
+    comentarios[livroId] = [...comentariosLivro, comentario];
+    await AsyncStorage.setItem('comentarios', JSON.stringify(comentarios));
+  } catch (erro) {
+    console.error('Erro ao salvar comentário:', erro);
+  }
+}
+
+const carregarComentarios = async () => {
+  try {
+    const comentariosString = await AsyncStorage.getItem('comentarios');
+    return comentariosString ? JSON.parse(comentariosString) : {};
+  } catch (erro) {
+    console.error('Erro ao carregar comentários:', erro);
+    return {};
+  }
+}
+
+
+//css
 const estilo = StyleSheet.create({
   container: {
     flex: 1,
@@ -38,7 +63,8 @@ const estilo = StyleSheet.create({
     backgroundColor: '#FFF',
     marginBottom: 15,
     fontSize: 16,
-    elevation: 2, 
+    elevation: 2,
+    
   },
   button: {
     backgroundColor: '#2D9CDB',
@@ -88,7 +114,6 @@ const estilo = StyleSheet.create({
   },
 });
 
-
 //Fazendo a tela de Login
 class Login extends React.Component {
   constructor(props) {
@@ -102,7 +127,7 @@ class Login extends React.Component {
   render() {
     return (
       <View style={estilo.container}>
-        <Text style={estilo.titulo_inicial}>Seja Bem-vindo ao Leitura Vive</Text>
+        <Text style={estilo.titulo_inicial}>{"Seja Bem-vindo ao Leitura Vive"}</Text>
         <Image source={require('./img/capa.webp')} style={estilo.imagem}></Image>
         <Text>{"Digite seu usuario:"}</Text>
         <TextInput
@@ -168,7 +193,7 @@ class Cadastro extends React.Component {
   }
 
   async salvar() {
-    if (!this.state.user || !this.state.password) {
+    if (!this.state.user || !this.state.password) {//verificacao para ver se não está vazio.
       alert('Necessário preencher as informações');
       return;
     }
@@ -212,102 +237,45 @@ class Cadastro extends React.Component {
 
 
 
-
-// Contexto para gerenciar comentários
-const CommentContext = React.createContext(); 
-// Cria um contexto chamado `CommentContext`.
-// Este contexto será usado para compartilhar dados relacionados a comentários entre os componentes sem a necessidade de passar props manualmente.
-
-
-// Provedor de Contexto
-class CommentProvider extends React.Component {
-  // Esta classe funciona como um "provedor" para o contexto. 
-  // Ela encapsula os dados e a lógica para manipular os comentários.
-
-  constructor(props) {
-    super(props); 
-    // Chama o construtor da classe React.Component.
-    // `props` são as propriedades passadas para o componente.
-
-    this.state = {
-      comentarios_livros: {}, //inicializando um dicionario para armazenar os comentarios.
-      // Cada `livroId` será uma chave nesse objeto, e o valor será uma lista de comentários.
-    };
-  }
-
-  // Função para adicionar um comentário a um filme específico
-  adiciona_comentario = (livroId, comment) => {
-    // Atualiza o estado adicionando um novo comentário ao `livroId` fornecido.
-    // Se não houver comentários existentes para esse `livroId`, cria uma nova lista.
-
-    this.setState((prevState) => ({
-      comentarios_livros: {
-        ...prevState.comentarios_livros, 
-        // Garante que os comentários existentes não sejam sobrescritos.
-        [livroId]: (prevState.comentarios_livros[livroId] || []).concat(comment),
-        // Adiciona o novo comentário à lista de comentários do `livroId`.
-        // Se não houver uma lista para este `livroId`, cria uma lista nova.
-      },
-    }));
-  };
-
-  render() {
-    return (
-      // Provedor do contexto
-      <CommentContext.Provider 
-        // Passa os dados e funções do contexto para os componentes filhos
-        value={{
-          ...this.state, 
-          // Passa o estado atual (que contém os comentários) para o contexto.
-          adiciona_comentario: this.adiciona_comentario, 
-          // Passa a função `adiciona_comentario` para que os componentes filhos possam usá-la.
-        }}
-      >
-        {this.props.children}
-      </CommentContext.Provider>
-    );
-  }
-}
-
-
 class Livros extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      comment: {}, // Armazena comentários temporários do usuário, separados por `livroId`.
+      comment: {}, // Comentários temporários por livro
+      comentarios: {}, // Comentários carregados do AsyncStorage
     };
   }
 
-  // Associa o contexto `CommentContext` à classe, permitindo acesso aos dados e funções do contexto.
-  static contextType = CommentContext;
+  async componentDidMount() {
+    const comentarios = await carregarComentarios();
+    this.setState({ comentarios });
+  }
 
-  // Método para adicionar um comentário e vibrar o dispositivo
-  handlead_adiciona_comentario = (livroId) => {
-    const { comment } = this.state; // Obtém o comentário temporário do estado.
-    const { adiciona_comentario } = this.context; // Obtém a função `adiciona_comentario` do contexto.
+handleAdicionarComentario = async (livroId) => {
+  const { comment, comentarios } = this.state;
 
-    if (comment[livroId]?.trim()) {
-      // Adiciona o comentário ao contexto se ele não estiver vazio.
-      adiciona_comentario(livroId, comment[livroId]);
+  if (comment[livroId]?.trim()) {
+    const novoComentario = comment[livroId];
+    await salvarComentario(livroId, novoComentario);
 
-      // Faz o celular vibrar
-      vibracao();
+    const comentariosAtualizados = await carregarComentarios(); // Recarrega todos os comentários
+    this.setState({
+      comentarios: comentariosAtualizados,
+      comment: { ...comment, [livroId]: '' },
+    });
 
-      // Limpa o comentário temporário no estado.
-      this.setState({ comment: {...comment, [livroId]: '' } });
-    } else {
-      // Exibe um alerta se o comentário estiver vazio.
-      alert("Comentário não pode ser vazio!");
-    }
-  };
+    vibracao();
 
-  // Renderiza a interface de usuário.
+  } else {
+    alert('Comentário não pode ser vazio!');
+  }
+}
+
+
   render() {
-    const { comentarios_livros } = this.context; // Obtém os comentários armazenados no contexto.
-    const { comment } = this.state; // Obtém os comentários temporários do estado.
+    const { comment, comentarios } = this.state;
 
-    // Array contendo informações dos livros.
-    const movies = [
+    const lista_livros = [
       { id: '1', title: 'Suicidas', image: require('./img/SUICIDAS.jpg') },
       { id: '2', title: 'Diário de um Banana', image: require('./img/diario_banana.jpg') },
       { id: '3', title: 'O Pequeno Príncipe', image: require('./img/pequeno_principe.jfif') },
@@ -317,52 +285,67 @@ class Livros extends React.Component {
 
     return (
       <ScrollView>
-        {movies.map((movie) => (
-          <View key={movie.id} style={estilo.container_imagem}>
-            {/* Título do livro */}
-            <Text style={estilo.titulo}>{movie.title}</Text>
-            {/* Imagem do livro */}
-            <Image source={movie.image} style={estilo.livros_imagens} ></Image>
-            {/* Entrada de texto para adicionar comentário */}
+        {lista_livros.map((livro) => (
+          <View key={livro.id} style={estilo.container_imagem}>
+            <Text style={estilo.titulo}>{livro.title}</Text>
+            <Image source={livro.image} style={estilo.livros_imagens} />
             <TextInput
-              placeholder="Comente sobre o livro :"
+              placeholder="Comente sobre o livro:"
+              placeholderTextColor="#999"
               style={estilo.input}
-              value={comment[movie.id] || ''} // Mostra o comentário temporário correspondente ao livro.
-              onChangeText={(text) => this.setState({ comment: { ...comment, [movie.id]: text } })}
-            ></TextInput>
-            {/* Botão para enviar o comentário */}
-            <Button title="Comentar" onPress={() => this.handlead_adiciona_comentario(movie.id)} />
-            {/* Lista de comentários existentes */}
-            <Text>{"Comentários:"}</Text>
-            <View>
-              {comentarios_livros[movie.id]?.map((comm, index) => (
-                <View key={index} style={estilo.comentario}>
-                  <Text>{comm}</Text>
-                </View>
-              ))}
-            </View>
+              value={comment[livro.id] || ''}
+              onChangeText={(text) =>
+                this.setState({ comment: { ...comment, [livro.id]: text } })
+              }
+            />
+            <Button
+              title="Comentar"
+              onPress={() => this.handleAdicionarComentario(livro.id)}
+            />
+            <Text>Comentários:</Text>
+            {comentarios[livro.id]?.map((comm, index) => (
+              <View key={index} style={estilo.comentario}>
+                <Text>{comm}</Text>
+              </View>
+            ))}
           </View>
         ))}
-        {/* Botão para sair */}
-        <Button title="Sair" onPress={() => this.props.navigation.replace("Login")} />
+        <Button
+          title="Sair"
+          onPress={() => this.props.navigation.replace('Login')}
+        />
       </ScrollView>
     );
   }
 }
-
-
-
 
 class Ranking extends React.Component {
-  // Conecta a classe ao contexto para acessar os comentários.
-  static contextType = CommentContext;
+  constructor(props) {
+    super(props);
+    this.state = {
+      comentarios: {}, // Comentários carregados do AsyncStorage
+    }
+  }
 
-  // Renderiza a interface de usuário.
+  // Função para carregar os comentários
+  carregarComentarios = async () => {
+    const comentarios = await carregarComentarios();
+    this.setState({ comentarios });
+  };
+
+  componentDidMount() {
+    this.carregarComentarios();
+    this.remover_listener = this.props.navigation.addListener('focus', this.carregarComentarios);
+  }
+
+  componentWillUnmount() {
+    this.remover_listener && this.remover_listener();
+  }
+
   render() {
-    const { comentarios_livros } = this.context; // Obtém os comentários do contexto.
+    const { comentarios } = this.state;
 
-    // Array contendo informações dos livros.
-    const movies = [
+    const lista_livros = [
       { id: '1', title: 'Suicidas', image: require('./img/SUICIDAS.jpg') },
       { id: '2', title: 'Diário de um Banana', image: require('./img/diario_banana.jpg') },
       { id: '3', title: 'O Pequeno Príncipe', image: require('./img/pequeno_principe.jfif') },
@@ -370,33 +353,30 @@ class Ranking extends React.Component {
       { id: '5', title: 'A Cabana', image: require('./img/cabana.jpg') },
     ];
 
-    // Ordena os livros com base no número de comentários.
-    const sortedMovies = movies.sort(
-      (a, b) => (comentarios_livros[b.id]?.length || 0) - (comentarios_livros[a.id]?.length || 0)
+    //funcao para ordenar a lista.
+    const livros_ordenados = lista_livros.sort(
+      (a, b) => (comentarios[b.id]?.length || 0) - (comentarios[a.id]?.length || 0)
     );
 
     return (
-      // Exibe os livros ordenados pelo número de comentários.
       <ScrollView>
-        <Text style={estilo.titulo}>Ranking dos Livros mais Polêmicos</Text>
-        {sortedMovies.map((movie) => (
-          <View key={movie.id} style={estilo.container_imagem}>
-            {/* Título e imagem do livro */}
-            <Text style={estilo.titulo}>{movie.title}</Text>
-            <Image source={movie.image} style={estilo.livros_imagens}></Image>
-            {/* Número de comentários */}
-            <Text> {"Comentários:"} {comentarios_livros[movie.id]?.length || 0}</Text>
+        <Text style={estilo.titulo}>{"Ranking dos Livros mais Polêmicos"}</Text>
+        {livros_ordenados.map((livro) => (
+          <View key={livro.id} style={estilo.container_imagem}>
+            <Text style={estilo.titulo}>{livro.title}</Text>
+            <Image source={livro.image} style={estilo.livros_imagens}></Image>
+            <Text>{"Comentários:"} {comentarios[livro.id]?.length || 0}</Text>
           </View>
         ))}
-        {/* Botão para sair */}
-        <Button title="Sair" onPress={() => this.props.navigation.replace("Login")} />
+        <Button
+          title="Sair"
+          onPress={() => this.props.navigation.replace('Login')}
+        />
       </ScrollView>
     );
   }
 }
 
-
-// telas principais após login
 class Tela_principal extends React.Component {
   render() {
     return (
@@ -409,34 +389,35 @@ class Tela_principal extends React.Component {
               <MaterialCommunityIcons name="book" color={color} size={size} />
             ),
           }}
-        />
+        ></Tab.Screen>
         <Tab.Screen
           name="Ranking"
           component={Ranking}
           options={{
             tabBarIcon: ({ color, size }) => (
-              <MaterialCommunityIcons name="podium" color={color} size={size} />
+              <MaterialCommunityIcons name="podium" color={color} size={size}></MaterialCommunityIcons>
             ),
           }}
-        />
+        ></Tab.Screen>
       </Tab.Navigator>
     );
   }
 }
 
-// Navegação principal
 class App extends React.Component {
   render() {
     return (
-      <CommentProvider>
-        <NavigationContainer>
-          <Stack.Navigator initialRouteName="Login">
-            <Stack.Screen name="Login" component={Login}></Stack.Screen>
-            <Stack.Screen name="Cadastro" component={Cadastro}></Stack.Screen>
-            <Stack.Screen name="Tela_principal" component={Tela_principal} options={{ headerShown: false }}></Stack.Screen>
-          </Stack.Navigator>
-        </NavigationContainer>
-      </CommentProvider>
+      <NavigationContainer>
+        <Stack.Navigator initialRouteName="Login">
+          <Stack.Screen name="Login" component={Login}></Stack.Screen>
+          <Stack.Screen name="Cadastro" component={Cadastro}></Stack.Screen>
+          <Stack.Screen
+            name="Tela_principal"
+            component={Tela_principal}
+            options={{ headerShown: false }}
+          ></Stack.Screen>
+        </Stack.Navigator>
+      </NavigationContainer>
     );
   }
 }

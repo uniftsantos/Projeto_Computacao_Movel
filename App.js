@@ -295,7 +295,7 @@ handleAdicionarComentario = async (livroId) => {
               title="Comentar"
               onPress={() => this.handleAdicionarComentario(livro.id)}
             />
-            <Text>Comentários:</Text>
+            <Text>{"Comentários:"}</Text>
             {comentarios[livro.id]?.map((comm, index) => (
               <View key={index} style={estilo.comentario}>
                 <Text>{comm}</Text>
